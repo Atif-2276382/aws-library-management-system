@@ -4,6 +4,8 @@ import com.library.dto.IssueBookRequest;
 import com.library.entity.Book;
 import com.library.entity.Lending;
 import com.library.entity.Member;
+import com.library.exception.BusinessException;
+import com.library.exception.ResourceNotFoundException;
 import com.library.repository.BookRepository;
 import com.library.repository.LendingRepository;
 import com.library.repository.MemberRepository;
@@ -30,18 +32,18 @@ public class LendingServiceImpl
         Book book = bookRepository
                 .findById(request.getBookId())
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Book not found"));
 
         Member member = memberRepository
                 .findById(request.getMemberId())
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Member not found"));
 
         if(!book.isAvailable()) {
 
-            throw new RuntimeException(
+            throw new BusinessException(
                     "Book not available");
         }
 
@@ -52,7 +54,7 @@ public class LendingServiceImpl
 
         if(borrowedBooks >= 5) {
 
-            throw new RuntimeException(
+            throw new BusinessException(
                     "Maximum borrowing limit reached");
         }
 
@@ -85,7 +87,7 @@ public class LendingServiceImpl
                 lendingRepository
                         .findById(lendingId)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Lending not found"));
 
         lending.setReturnDate(
@@ -114,7 +116,7 @@ public class LendingServiceImpl
         return lendingRepository
                 .findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Lending not found"));
     }
 }

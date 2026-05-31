@@ -4,6 +4,8 @@ import com.library.dto.CreateMemberRequest;
 import com.library.dto.UpdateMemberRequest;
 import com.library.entity.Member;
 import com.library.entity.User;
+import com.library.exception.DuplicateResourceException;
+import com.library.exception.ResourceNotFoundException;
 import com.library.repository.MemberRepository;
 import com.library.repository.UserRepository;
 import com.library.service.MemberService;
@@ -29,7 +31,7 @@ public class MemberServiceImpl
                         request.getMembershipId())
                 .isPresent()) {
 
-            throw new RuntimeException(
+            throw new DuplicateResourceException(
                     "Membership ID already exists");
         }
 
@@ -60,7 +62,7 @@ public class MemberServiceImpl
 
         return memberRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Member not found"));
     }
 
