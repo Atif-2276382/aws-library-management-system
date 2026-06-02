@@ -3,6 +3,9 @@ import {
   Routes,
   Route
 } from "react-router-dom";
+import Books from "./pages/Books";
+import Members
+from "./pages/Members";
 
 function Login() {
   return <h2>Login Page</h2>;
@@ -27,6 +30,14 @@ function App() {
         <Route
           path="/dashboard"
           element={<Dashboard />}
+        />
+        <Route
+           path="/books"
+           element={<Books/>}
+        />
+        <Route
+          path="/members"
+          element={<Members/>}
         />
 
       </Routes>

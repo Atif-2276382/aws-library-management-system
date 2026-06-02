@@ -23,7 +23,7 @@ public class DueDateNotificationScheduler {
     private final NotificationService
             notificationService;
 
-    @Scheduled(cron = "0 * * * * *")
+    //@Scheduled(cron = "0 * * * * *")
     public void checkOverdueBooks() {
 
         log.info(
