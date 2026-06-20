@@ -6,16 +6,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('user');
-    if (!saved) return null;
-    try {
-      return JSON.parse(saved);
-    } catch (e) {
-      // corrupted localStorage entry — clear to avoid render-time crash
-      console.warn('AuthContext: failed to parse stored user, clearing localStorage');
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-      return null;
-    }
+    return saved ? JSON.parse(saved) : null;
   });
 
   const login = async (username, password) => {
