@@ -9,3 +9,27 @@ backend/target/
 frontend/dist/
 # Ignore the entire resources folder containing the API key
 src/main/resources/
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Keys
+*.pem
+library-key
+library-management-prod-key
+
+# Environment files
+.env
+.env.*
+
+# Maven
+target/
+
+# Node
+node_modules/
+dist/
+
+*.tfplan
+plan.txt
