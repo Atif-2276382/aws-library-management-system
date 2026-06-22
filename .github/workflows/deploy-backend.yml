@@ -8,7 +8,6 @@ paths:
 jobs:
 deploy-backend:
 
-```
 runs-on: ubuntu-latest
 
 defaults:
