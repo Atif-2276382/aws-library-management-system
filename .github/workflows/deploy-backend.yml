@@ -84,4 +84,3 @@ steps:
         docker ps
 
         docker logs library-management --tail 50
-```
