@@ -6,6 +6,8 @@ import com.library.entity.Book;
 import com.library.exception.ResourceNotFoundException;
 import com.library.repository.AuthorRepository;
 import com.library.repository.BookRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,7 @@ import java.util.List;
 @Service
 public class AuthorService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthorService.class);
     private final AuthorRepository authorRepository;
     private final BookRepository bookRepository;
 
@@ -37,7 +40,9 @@ public class AuthorService {
     public AuthorDtos.AuthorResponse create(AuthorDtos.AuthorRequest request) {
         Author author = new Author();
         author.setName(request.name());
-        return toResponse(authorRepository.save(author));
+        Author saved = authorRepository.save(author);
+        log.info("Created author id={} name={}", saved.getAuthorId(), saved.getName());
+        return toResponse(saved);
     }
 
     @Transactional
@@ -50,6 +55,7 @@ public class AuthorService {
     @Transactional
     public void delete(Integer id) {
         authorRepository.delete(getAuthor(id));
+        log.info("Deleted author id={}", id);
     }
 
     private Author getAuthor(Integer id) {

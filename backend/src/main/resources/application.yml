@@ -38,6 +38,8 @@ management:
       show-details: always
 
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"
   level:
     root: INFO
     com.library: DEBUG

@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.library.controller.AuthController;
 
 import java.io.IOException;
 import java.util.Map;
@@ -17,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(RateLimitFilter.class);
     private final int maxRequestsPerMinute;
     private final Map<String, Window> windows = new ConcurrentHashMap<>();
 
@@ -42,11 +46,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 window.count.set(0);
             }
             if (window.count.incrementAndGet() > maxRequestsPerMinute) {
+                log.warn("Rate limit exceeded for key={} uri={}", key, request.getRequestURI());
                 response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
                 response.getWriter().write("{\"message\":\"Rate limit exceeded\"}");
                 return;
             }
         }
+        log.debug("Rate limit passed for key={} uri={} count={}", key, request.getRequestURI(), window.count.get());
         filterChain.doFilter(request, response);
     }
 

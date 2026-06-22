@@ -10,6 +10,8 @@ import com.library.repository.LendingRepository;
 import com.library.repository.MemberRepository;
 import com.library.repository.NotificationRepository;
 import com.library.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ import java.util.List;
 @Service
 public class MemberService {
 
+    private static final Logger log = LoggerFactory.getLogger(MemberService.class);
     private final MemberRepository memberRepository;
     private final UserRepository userRepository;
     private final LendingRepository lendingRepository;
@@ -52,9 +55,11 @@ public class MemberService {
     @Transactional
     public MemberDtos.MemberResponse create(MemberDtos.MemberRequest request) {
         if (userRepository.existsByUsername(request.username())) {
+            log.warn("Member creation failed, username already exists={}", request.username());
             throw new BusinessException("Username already exists");
         }
         if (memberRepository.existsByMembershipId(request.membershipId())) {
+            log.warn("Member creation failed, membership ID already exists={}", request.membershipId());
             throw new BusinessException("Membership ID already exists");
         }
         User user = new User();
@@ -67,7 +72,9 @@ public class MemberService {
         member.setName(request.name());
         member.setMembershipId(request.membershipId());
         member.setUser(user);
-        return toResponse(memberRepository.save(member));
+        Member saved = memberRepository.save(member);
+        log.info("Created member id={} username={} membershipId={}", saved.getMemberId(), saved.getUser().getUsername(), saved.getMembershipId());
+        return toResponse(saved);
     }
 
     @Transactional
@@ -75,17 +82,21 @@ public class MemberService {
         Member member = getMember(id);
         if (!member.getMembershipId().equals(request.membershipId())
                 && memberRepository.existsByMembershipId(request.membershipId())) {
+            log.warn("Member update failed, membership ID already exists={} id={}", request.membershipId(), id);
             throw new BusinessException("Membership ID already exists");
         }
         member.setName(request.name());
         member.setMembershipId(request.membershipId());
-        return toResponse(memberRepository.save(member));
+        Member saved = memberRepository.save(member);
+        log.info("Updated member id={} membershipId={}", id, saved.getMembershipId());
+        return toResponse(saved);
     }
 
     @Transactional
     public void delete(Integer id) {
         Member member = getMember(id);
         if (lendingRepository.countByMemberMemberIdAndReturnDateIsNull(id) > 0) {
+            log.warn("Member delete blocked by active loans id={}", id);
             throw new BusinessException("Cannot delete member with active loans. Return all borrowed books first.");
         }
         notificationRepository.deleteByMemberMemberId(id);
@@ -94,6 +105,7 @@ public class MemberService {
         memberRepository.delete(member);
         memberRepository.flush();
         userRepository.delete(user);
+        log.info("Deleted member id={} username={}", id, user.getUsername());
     }
 
     private Member getMember(Integer id) {

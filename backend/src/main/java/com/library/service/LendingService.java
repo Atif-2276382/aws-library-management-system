@@ -9,6 +9,8 @@ import com.library.exception.ResourceNotFoundException;
 import com.library.repository.BookRepository;
 import com.library.repository.LendingRepository;
 import com.library.repository.MemberRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import java.util.List;
 @Service
 public class LendingService {
 
+    private static final Logger log = LoggerFactory.getLogger(LendingService.class);
     public static final int MAX_ACTIVE_LOANS = 5;
     public static final int LOAN_PERIOD_DAYS = 14;
 
@@ -48,16 +51,19 @@ public class LendingService {
 
     @Transactional
     public LendingDtos.LendingResponse issue(LendingDtos.IssueRequest request) {
+        log.debug("Issuing lending request for bookId={} memberId={}", request.bookId(), request.memberId());
         Book book = bookRepository.findById(request.bookId())
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
         Member member = memberRepository.findById(request.memberId())
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
 
         if (!book.isAvailability()) {
+            log.warn("Lending failed, book not available bookId={}", request.bookId());
             throw new BusinessException("Book is not available for lending");
         }
         long activeLoans = lendingRepository.countByMemberMemberIdAndReturnDateIsNull(member.getMemberId());
         if (activeLoans >= MAX_ACTIVE_LOANS) {
+            log.warn("Lending failed, member reached active loan limit memberId={}", member.getMemberId());
             throw new BusinessException("Member has reached the maximum of 5 active loans");
         }
 
@@ -71,20 +77,26 @@ public class LendingService {
         book.setAvailability(false);
         bookRepository.save(book);
 
-        return toResponse(lendingRepository.save(lending));
+        Lending saved = lendingRepository.save(lending);
+        log.info("Created lending id={} bookId={} memberId={}", saved.getLendingId(), request.bookId(), request.memberId());
+        return toResponse(saved);
     }
 
     @Transactional
     public LendingDtos.LendingResponse returnBook(Integer lendingId) {
+        log.debug("Returning lending id={}", lendingId);
         Lending lending = getLending(lendingId);
         if (lending.getReturnDate() != null) {
+            log.warn("Return failed, already returned lending id={}", lendingId);
             throw new BusinessException("Book has already been returned");
         }
         lending.setReturnDate(LocalDateTime.now());
         Book book = lending.getBook();
         book.setAvailability(true);
         bookRepository.save(book);
-        return toResponse(lendingRepository.save(lending));
+        Lending saved = lendingRepository.save(lending);
+        log.info("Returned lending id={} bookId={}", saved.getLendingId(), book.getBookId());
+        return toResponse(saved);
     }
 
     private Lending getLending(Integer id) {

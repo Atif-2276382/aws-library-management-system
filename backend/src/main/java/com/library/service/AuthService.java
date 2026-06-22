@@ -10,6 +10,8 @@ import com.library.repository.UserRepository;
 import com.library.security.JwtService;
 import com.library.security.LibraryUserDetails;
 import com.library.security.TokenBlacklistService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +22,7 @@ import org.springframework.util.StringUtils;
 @Service
 public class AuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     private final UserRepository userRepository;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
@@ -70,6 +73,7 @@ public class AuthService {
         }
 
         String token = jwtService.generateToken(user.getUsername(), user.getRole(), user.getUserId());
+        log.info("User registered: username={} userId={} role={}", user.getUsername(), user.getUserId(), user.getRole());
         return new AuthDtos.AuthResponse(token, user.getUsername(), user.getRole(), user.getUserId(), memberId);
     }
 
@@ -82,11 +86,13 @@ public class AuthService {
                 .map(Member::getMemberId)
                 .orElse(null);
         String token = jwtService.generateToken(user.getUsername(), user.getRole(), user.getUserId());
+        log.info("User authenticated: username={} userId={} role={}", user.getUsername(), user.getUserId(), user.getRole());
         return new AuthDtos.AuthResponse(token, user.getUsername(), user.getRole(), user.getUserId(), memberId);
     }
 
     public void logout(String token) {
         tokenBlacklistService.blacklist(token);
+        log.info("User logged out and token blacklisted");
     }
 
     public AuthDtos.AuthResponse currentUser(LibraryUserDetails userDetails) {
@@ -95,6 +101,7 @@ public class AuthService {
                 .map(Member::getMemberId)
                 .orElse(null);
         String token = jwtService.generateToken(user.getUsername(), user.getRole(), user.getUserId());
+        log.debug("Returning current user response for username={}", user.getUsername());
         return new AuthDtos.AuthResponse(token, user.getUsername(), user.getRole(), user.getUserId(), memberId);
     }
 }

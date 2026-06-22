@@ -7,6 +7,8 @@ import com.library.exception.BusinessException;
 import com.library.exception.ResourceNotFoundException;
 import com.library.repository.AuthorRepository;
 import com.library.repository.BookRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,8 @@ import java.util.List;
 
 @Service
 public class BookService {
+
+    private static final Logger log = LoggerFactory.getLogger(BookService.class);
 
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
@@ -37,24 +41,31 @@ public class BookService {
     @Transactional
     public BookDtos.BookResponse create(BookDtos.BookRequest request) {
         if (bookRepository.existsByIsbn(request.isbn())) {
+            log.warn("Book creation failed, duplicate ISBN={}", request.isbn());
             throw new BusinessException("ISBN must be unique");
         }
         Book book = mapRequest(new Book(), request);
-        return toResponse(bookRepository.save(book));
+        Book saved = bookRepository.save(book);
+        log.info("Created book id={} title={} isbn={}", saved.getBookId(), saved.getTitle(), saved.getIsbn());
+        return toResponse(saved);
     }
 
     @Transactional
     public BookDtos.BookResponse update(Integer id, BookDtos.BookRequest request) {
         Book book = getBook(id);
         if (!book.getIsbn().equals(request.isbn()) && bookRepository.existsByIsbn(request.isbn())) {
+            log.warn("Book update failed, duplicate ISBN={} for id={}", request.isbn(), id);
             throw new BusinessException("ISBN must be unique");
         }
-        return toResponse(bookRepository.save(mapRequest(book, request)));
+        Book updated = bookRepository.save(mapRequest(book, request));
+        log.info("Updated book id={} title={} isbn={}", updated.getBookId(), updated.getTitle(), updated.getIsbn());
+        return toResponse(updated);
     }
 
     @Transactional
     public void delete(Integer id) {
         bookRepository.delete(getBook(id));
+        log.info("Deleted book id={}", id);
     }
 
     private Book mapRequest(Book book, BookDtos.BookRequest request) {
