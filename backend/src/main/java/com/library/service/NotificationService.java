@@ -44,8 +44,8 @@ public class NotificationService {
         notification.setOverdue(request.overdue());
         notification.setSentAt(LocalDateTime.now());
         notification = notificationRepository.save(notification);
-        log.info("Notification sent to member {}: {}", member.getMemberId(), request.message());
-        return toResponse(notification);
+        log.info("Notification sent to member {}: {} :", member.getMemberId(), request.message());
+        return toResponse(notification, member.getEmailId());
     }
 
     public List<NotificationDtos.NotificationResponse> findByMember(Integer memberId) {
@@ -72,6 +72,29 @@ public class NotificationService {
                     lending.getMember().getMemberId(), message, overdue));
         }
     }
+
+    @Transactional
+public void sendOverdueNotifications() {
+
+    List<Lending> lendings =
+            lendingRepository.findOverdueBooks(LocalDateTime.now());
+
+    for (Lending lending : lendings) {
+
+        String message =
+                String.format(
+                        "Book '%s' is overdue. Due date was %s.",
+                        lending.getBook().getTitle(),
+                        lending.getDueDate());
+
+        send(new NotificationDtos.NotificationRequest(
+                lending.getMember().getMemberId(),
+                message,
+                true));
+
+        // send email here
+    }
+}
 
     private NotificationDtos.NotificationResponse toResponse(Notification notification) {
         return new NotificationDtos.NotificationResponse(

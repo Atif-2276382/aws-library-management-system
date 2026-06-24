@@ -44,4 +44,20 @@ public class NotificationController {
                 .getMemberId();
         return notificationService.findByMember(memberId);
     }
+
+    @PostMapping("/reminders")
+public ResponseEntity<String> triggerReminders() {
+
+    notificationService.sendDueAndOverdueReminders();
+
+    return ResponseEntity.ok("Reminders processed successfully");
+}
+
+@PostMapping("/scheduler/overdue")
+public ResponseEntity<String> triggerOverdueNotifications() {
+
+    notificationService.sendOverdueNotifications();
+
+    return ResponseEntity.ok("Overdue notifications processed");
+}
 }

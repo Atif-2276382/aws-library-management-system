@@ -17,7 +17,7 @@ public class NotificationScheduler {
         this.notificationService = notificationService;
     }
 
-    @Scheduled(cron = "0 0 8 * * *")
+   // @Scheduled(cron = "0 0 8 * * *")
     public void sendDailyReminders() {
         log.info("Running scheduled due/overdue notification job");
         notificationService.sendDueAndOverdueReminders();
