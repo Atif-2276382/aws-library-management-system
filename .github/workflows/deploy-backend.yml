@@ -58,18 +58,18 @@ jobs:
             set -e
 
             # 1. Stop and remove existing container if running
-          docker stop library-management || true
-          docker rm library-management || true
+            docker stop library-management || true
+            docker rm library-management || true
 
             # 2. Authenticate Docker with ECR on the remote host using GitHub Secrets
-          aws ecr get-login-password --region us-east-1 | \
-          docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
+            aws ecr get-login-password --region us-east-1 | \
+            docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
 
             # 3. Pull the latest image
-          docker pull ${{ secrets.ECR_REPOSITORY }}:latest
+            docker pull ${{ secrets.ECR_REPOSITORY }}:latest
 
             # 4. Run the container with correctly formatted line continuations (\)
-          docker run -d \
+            docker run -d \
               --name library-management \
               -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=prod \
@@ -80,6 +80,6 @@ jobs:
               ${{ secrets.ECR_REPOSITORY }}:latest
 
             # 5. Post-deployment smoke check
-          docker ps
-          sleep 10
-          docker logs library-management --tail 50
+            docker ps
+            sleep 10
+            docker logs library-management --tail 50
