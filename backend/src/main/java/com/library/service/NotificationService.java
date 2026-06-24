@@ -45,7 +45,7 @@ public class NotificationService {
         notification.setSentAt(LocalDateTime.now());
         notification = notificationRepository.save(notification);
         log.info("Notification sent to member {}: {} :", member.getMemberId(), request.message());
-        return toResponse(notification, member.getEmailId());
+        return toResponse(notification);
     }
 
     public List<NotificationDtos.NotificationResponse> findByMember(Integer memberId) {
