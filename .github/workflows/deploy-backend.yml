@@ -38,8 +38,9 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
+      # Using the working-directory context explicitly to avoid tag errors
       - name: Build Docker Image
-        run: docker build -t library-management-backend .
+        run: docker build -t library-management-backend:latest .
 
       - name: Tag Docker Image
         run: |
@@ -48,8 +49,7 @@ jobs:
 
       - name: Push Docker Image
         run: |
-          docker push \
-          ${{ secrets.ECR_REPOSITORY }}:latest
+          docker push ${{ secrets.ECR_REPOSITORY }}:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -57,11 +57,16 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_SESSION_TOKEN
+          envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_SESSION_TOKEN,ECR_REPOSITORY,SPRING_DATASOURCE_URL,SPRING_DATASOURCE_USERNAME,SPRING_DATASOURCE_PASSWORD,JWT_SECRET
           script: |
             set -e
 
@@ -73,32 +78,33 @@ jobs:
             docker rm library-management || true
 
             echo "Logging into ECR..."
-            aws ecr get-login-password --region us-east-1 | \
-            docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
+            # Extracting the registry base domain from the full repository path
+            ECR_REGISTRY=$(echo "$ECR_REPOSITORY" | cut -d'/' -f1)
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
             echo "Removing cached image..."
-            docker image rm ${{ secrets.ECR_REPOSITORY }}:latest || true
+            docker image rm "$ECR_REPOSITORY":latest || true
 
             echo "Pulling latest image..."
-            docker pull ${{ secrets.ECR_REPOSITORY }}:latest
+            docker pull "$ECR_REPOSITORY":latest
 
             echo "Starting container..."
-docker run -d \
-  --name library-management \
-  --log-driver=awslogs \
-  --log-opt awslogs-region=us-east-1 \
-  --log-opt awslogs-group=/library-management/backend \
-  --log-opt awslogs-stream=backend \
-  -p 8080:8080 \
-  -e SPRING_PROFILES_ACTIVE=prod \
-  -e SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}" \
-  -e SPRING_DATASOURCE_USERNAME="${{ secrets.SPRING_DATASOURCE_USERNAME }}" \
-  -e SPRING_DATASOURCE_PASSWORD="${{ secrets.SPRING_DATASOURCE_PASSWORD }}" \
-  -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-  ${{ secrets.ECR_REPOSITORY }}:latest
+            docker run -d \
+              --name library-management \
+              --log-driver=awslogs \
+              --log-opt awslogs-region=us-east-1 \
+              --log-opt awslogs-group=/library-management/backend \
+              --log-opt awslogs-stream=backend \
+              -p 8080:8080 \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
+              -e SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
+              -e SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
+              -e JWT_SECRET="$JWT_SECRET" \
+              "$ECR_REPOSITORY":latest
 
-echo "Container Status:"
-docker ps
+            echo "Container Status:"
+            docker ps
 
-echo "Verify Log Driver:"
-docker inspect library-management --format='{{json .HostConfig.LogConfig}}'
+            echo "Verify Log Driver:"
+            docker inspect library-management --format='{{json .HostConfig.LogConfig}}'
