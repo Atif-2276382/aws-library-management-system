@@ -30,7 +30,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: us-east-1 # Hardcoded Region
+          aws-region: us-east-1
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
@@ -55,15 +55,21 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            docker stop library-management || true
-            docker rm library-management || true
-            
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
-            docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
-            
-            docker pull ${{ secrets.ECR_REPOSITORY }}:latest
-            
-            docker run -d \
+          set -e
+
+            # 1. Stop and remove existing container if running
+          docker stop library-management || true
+          docker rm library-management || true
+
+            # 2. Authenticate Docker with ECR on the remote host using GitHub Secrets
+          aws ecr get-login-password --region us-east-1 | \
+          docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
+
+            # 3. Pull the latest image
+          docker pull ${{ secrets.ECR_REPOSITORY }}:latest
+
+            # 4. Run the container with correctly formatted line continuations (\)
+          docker run -d \
               --name library-management \
               -p 8080:8080 \
               -e SPRING_PROFILES_ACTIVE=prod \
@@ -72,6 +78,8 @@ jobs:
               -e SPRING_DATASOURCE_PASSWORD="${{ secrets.SPRING_DATASOURCE_PASSWORD }}" \
               -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
               ${{ secrets.ECR_REPOSITORY }}:latest
-              
-            docker ps
-            docker logs library-management --tail 50
+
+            # 5. Post-deployment smoke check
+          docker ps
+          sleep 10
+          docker logs library-management --tail 50
