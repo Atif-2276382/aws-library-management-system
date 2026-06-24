@@ -27,6 +27,8 @@ app:
     expiration-ms: 86400000
   rate-limit:
     per-minute: 120
+  email:
+    from: 313atifk@gmail.com
 
 management:
   endpoints:

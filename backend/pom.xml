@@ -22,7 +22,7 @@
         <jjwt.version>0.12.6</jjwt.version>
     </properties>
 
-    <dependencies>
+    <dependencies>  
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -79,6 +79,11 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>ses</artifactId>
+            <version>2.20.0</version>
         </dependency>
     </dependencies>
 

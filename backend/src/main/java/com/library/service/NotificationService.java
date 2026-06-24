@@ -24,14 +24,16 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
     private final LendingRepository lendingRepository;
+    private final EmailService emailService;
 
     public NotificationService(
             NotificationRepository notificationRepository,
             MemberRepository memberRepository,
-            LendingRepository lendingRepository) {
+            LendingRepository lendingRepository, EmailService emailService) {
         this.notificationRepository = notificationRepository;
         this.memberRepository = memberRepository;
         this.lendingRepository = lendingRepository;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -79,21 +81,26 @@ public void sendOverdueNotifications() {
     List<Lending> lendings =
             lendingRepository.findOverdueBooks(LocalDateTime.now());
 
-    for (Lending lending : lendings) {
+   for (Lending lending : lendings) {
 
-        String message =
-                String.format(
-                        "Book '%s' is overdue. Due date was %s.",
-                        lending.getBook().getTitle(),
-                        lending.getDueDate());
+    boolean overdue = true;
 
-        send(new NotificationDtos.NotificationRequest(
-                lending.getMember().getMemberId(),
-                message,
-                true));
+    String message =
+            String.format(
+                    "Book '%s' is overdue. Due date was %s.",
+                    lending.getBook().getTitle(),
+                    lending.getDueDate());
 
-        // send email here
-    }
+    send(new NotificationDtos.NotificationRequest(
+            lending.getMember().getMemberId(),
+            message,
+            overdue));
+
+    emailService.sendEmail(
+            lending.getMember().getEmailId(),
+            "Library Book Overdue",
+            message);
+}
 }
 
     private NotificationDtos.NotificationResponse toResponse(Notification notification) {
