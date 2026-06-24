@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiRequest } from '../api/client';
 
-const empty = { name: '', membershipId: '', username: '', password: '' };
+const empty = { name: '', membershipId: '', emailId: '', username: '', password: '' };
 
 export default function MembersPage() {
   const [members, setMembers] = useState([]);
@@ -24,7 +24,7 @@ export default function MembersPage() {
       if (editingId) {
         await apiRequest(`/api/members/${editingId}`, {
           method: 'PUT',
-          body: JSON.stringify({ name: form.name, membershipId: form.membershipId })
+          body: JSON.stringify({ name: form.name, membershipId: form.membershipId, emailId: form.emailId })
         });
       } else {
         await apiRequest('/api/members', { method: 'POST', body: JSON.stringify(form) });
@@ -61,6 +61,7 @@ export default function MembersPage() {
       <form className="card form-grid" onSubmit={onSubmit}>
         <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
         <input placeholder="Membership ID" value={form.membershipId} onChange={(e) => setForm({ ...form, membershipId: e.target.value })} required />
+        <input type="email" placeholder="Email" value={form.emailId} onChange={(e) => setForm({ ...form, emailId: e.target.value })} required />
         {!editingId && (
           <>
             <input placeholder="Username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
@@ -71,13 +72,13 @@ export default function MembersPage() {
       </form>
       <div className="table-wrap">
         <table>
-          <thead><tr><th>Name</th><th>Membership ID</th><th>Username</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Membership ID</th><th>Email</th><th>Username</th><th>Actions</th></tr></thead>
           <tbody>
             {members.map((m) => (
               <tr key={m.memberId}>
-                <td>{m.name}</td><td>{m.membershipId}</td><td>{m.username}</td>
+                <td>{m.name}</td><td>{m.membershipId}</td><td>{m.emailId}</td><td>{m.username}</td>
                 <td className="actions">
-                  <button onClick={() => { setEditingId(m.memberId); setForm({ ...empty, name: m.name, membershipId: m.membershipId }); }}>Edit</button>
+                  <button onClick={() => { setEditingId(m.memberId); setForm({ ...empty, name: m.name, membershipId: m.membershipId, emailId: m.emailId }); }}>Edit</button>
                   <button onClick={() => onDelete(m)}>Delete</button>
                 </td>
               </tr>

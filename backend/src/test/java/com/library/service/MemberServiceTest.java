@@ -42,7 +42,7 @@ class MemberServiceTest {
     @Test
     void create_duplicateMembershipId_throws() {
         MemberDtos.MemberRequest request =
-                new MemberDtos.MemberRequest("John", "M001", "john", "password");
+                new MemberDtos.MemberRequest("John", "M001", "john@example.com", "john", "password");
         when(userRepository.existsByUsername("john")).thenReturn(false);
         when(memberRepository.existsByMembershipId("M001")).thenReturn(true);
         assertThrows(BusinessException.class, () -> memberService.create(request));

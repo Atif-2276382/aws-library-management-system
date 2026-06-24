@@ -40,7 +40,7 @@ class AuthServiceTest {
     @Test
     void register_duplicateUsername_throws() {
         AuthDtos.RegisterRequest request =
-                new AuthDtos.RegisterRequest("john", "password", Role.MEMBER, "John", "M001");
+                new AuthDtos.RegisterRequest("john", "password", Role.MEMBER, "John", "M001", "john@example.com");
         when(userRepository.existsByUsername("john")).thenReturn(true);
         assertThrows(BusinessException.class, () -> authService.register(request));
     }

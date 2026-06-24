@@ -36,13 +36,13 @@ public class MemberController {
 
     @PostMapping
     public ResponseEntity<MemberDtos.MemberResponse> create(@Valid @RequestBody MemberDtos.MemberRequest request) {
-        log.info("Creating member username={} membershipId={}", request.username(), request.membershipId());
+        log.info("Creating member username={} membershipId={} email={}", request.username(), request.membershipId(), request.emailId());
         return ResponseEntity.status(HttpStatus.CREATED).body(memberService.create(request));
     }
 
     @PutMapping("/{id}")
     public MemberDtos.MemberResponse update(@PathVariable Integer id, @Valid @RequestBody MemberDtos.MemberUpdateRequest request) {
-        log.info("Updating member id={} membershipId={}", id, request.membershipId());
+        log.info("Updating member id={} membershipId={} email={}", id, request.membershipId(), request.emailId());
         return memberService.update(id, request);
     }
 

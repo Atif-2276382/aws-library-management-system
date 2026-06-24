@@ -22,6 +22,7 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: library-management-jwt-secret-key-256-bits-min
     depends_on:
       mysql:
         condition: service_healthy

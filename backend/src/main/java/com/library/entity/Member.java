@@ -17,6 +17,9 @@ public class Member {
     @Column(name = "MembershipID", nullable = false, unique = true, length = 20)
     private String membershipId;
 
+    @Column(name = "Email", nullable = false, length = 100)
+    private String emailId;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "UserID", nullable = false, unique = true)
     private User user;
@@ -43,6 +46,14 @@ public class Member {
 
     public void setMembershipId(String membershipId) {
         this.membershipId = membershipId;
+    }
+
+    public String getEmailId() {
+        return emailId;
+    }
+
+    public void setEmailId(String emailId) {
+        this.emailId = emailId;
     }
 
     public User getUser() {

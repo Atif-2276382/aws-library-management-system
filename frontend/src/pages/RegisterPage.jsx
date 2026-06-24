@@ -10,7 +10,8 @@ export default function RegisterPage() {
     password: '',
     role: 'MEMBER',
     memberName: '',
-    membershipId: ''
+    membershipId: '',
+    emailId: ''
   });
   const [error, setError] = useState('');
 
@@ -27,6 +28,7 @@ export default function RegisterPage() {
     if (form.role === 'MEMBER') {
       payload.memberName = form.memberName.trim();
       payload.membershipId = form.membershipId.trim();
+      payload.emailId = form.emailId.trim();
     }
     try {
       await register(payload);
@@ -53,6 +55,7 @@ export default function RegisterPage() {
           <>
             <label>Full Name<input name="memberName" value={form.memberName} onChange={onChange} required /></label>
             <label>Membership ID<input name="membershipId" value={form.membershipId} onChange={onChange} required /></label>
+            <label>Email<input type="email" name="emailId" value={form.emailId} onChange={onChange} required /></label>
           </>
         )}
         <button type="submit">Create Account</button>

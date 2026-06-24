@@ -71,9 +71,10 @@ public class MemberService {
         Member member = new Member();
         member.setName(request.name());
         member.setMembershipId(request.membershipId());
+        member.setEmailId(request.emailId());
         member.setUser(user);
         Member saved = memberRepository.save(member);
-        log.info("Created member id={} username={} membershipId={}", saved.getMemberId(), saved.getUser().getUsername(), saved.getMembershipId());
+        log.info("Created member id={} username={} membershipId={} email={}", saved.getMemberId(), saved.getUser().getUsername(), saved.getMembershipId(), saved.getEmailId());
         return toResponse(saved);
     }
 
@@ -87,8 +88,9 @@ public class MemberService {
         }
         member.setName(request.name());
         member.setMembershipId(request.membershipId());
+        member.setEmailId(request.emailId());
         Member saved = memberRepository.save(member);
-        log.info("Updated member id={} membershipId={}", id, saved.getMembershipId());
+        log.info("Updated member id={} membershipId={} email={}", id, saved.getMembershipId(), saved.getEmailId());
         return toResponse(saved);
     }
 
@@ -118,6 +120,7 @@ public class MemberService {
                 member.getMemberId(),
                 member.getName(),
                 member.getMembershipId(),
+                member.getEmailId(),
                 member.getUser().getUserId(),
                 member.getUser().getUsername());
     }

@@ -58,18 +58,23 @@ public class AuthService {
 
         Integer memberId = null;
         if (request.role() == Role.MEMBER) {
-            if (!StringUtils.hasText(request.memberName()) || !StringUtils.hasText(request.membershipId())) {
-                throw new BusinessException("Member name and membership ID are required for members");
+            if (!StringUtils.hasText(request.memberName()) || !StringUtils.hasText(request.membershipId()) || !StringUtils.hasText(request.emailId())) {
+                throw new BusinessException("Member name, email, and membership ID are required for members");
             }
             String membershipId = request.membershipId().trim();
+            String emailId = request.emailId().trim();
             if (memberRepository.existsByMembershipId(membershipId)) {
                 throw new BusinessException("Membership ID already exists");
             }
             Member member = new Member();
             member.setName(request.memberName().trim());
             member.setMembershipId(membershipId);
+            member.setEmailId(emailId);
             member.setUser(user);
-            memberId = memberRepository.save(member).getMemberId();
+            member = memberRepository.save(member);
+            memberId = member.getMemberId();
+            log.info("Member account created: username={} userId={} memberId={} membershipId={} email={}",
+                    user.getUsername(), user.getUserId(), memberId, member.getMembershipId(), member.getEmailId());
         }
 
         String token = jwtService.generateToken(user.getUsername(), user.getRole(), user.getUserId());

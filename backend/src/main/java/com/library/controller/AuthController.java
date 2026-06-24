@@ -25,7 +25,8 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthDtos.AuthResponse> register(@Valid @RequestBody AuthDtos.RegisterRequest request) {
-        log.info("Register request received for username={} role={}", request.username(), request.role());
+        log.info("Register request received for username={} role={} memberName={} membershipId={} emailId={}",
+                request.username(), request.role(), request.memberName(), request.membershipId(), request.emailId());
         return ResponseEntity.ok(authService.register(request));
     }
 
