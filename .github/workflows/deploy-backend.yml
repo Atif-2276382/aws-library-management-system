@@ -33,6 +33,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker Image
@@ -61,14 +62,15 @@ jobs:
             docker stop library-management || true
             docker rm library-management || true
 
-            # 2. Authenticate Docker with ECR on the remote host using GitHub Secrets
-            aws ecr get-login-password --region us-east-1 | \
-            docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
+            # 2. Log in using the automatic token from the ECR step
+            echo "${{ steps.login-ecr.outputs.docker_username_password_blob_ecr_amazonaws_com }}" | \
+            docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
 
-            # 3. Pull the latest image
+            # 3. Clean up the old image and pull the new one
+            docker image rm ${{ secrets.ECR_REPOSITORY }}:latest || true
             docker pull ${{ secrets.ECR_REPOSITORY }}:latest
 
-            # 4. Run the container with correctly formatted line continuations (\)
+            # 4. Spin up the container
             docker run -d \
               --name library-management \
               -p 8080:8080 \
@@ -79,7 +81,7 @@ jobs:
               -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
               ${{ secrets.ECR_REPOSITORY }}:latest
 
-            # 5. Post-deployment smoke check
+            # 5. Sanity checks
             docker ps
             sleep 10
-            docker logs library-management --tail 50
+            docker logs library-management --tail 100
