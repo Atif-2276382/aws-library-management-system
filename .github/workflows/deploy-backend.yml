@@ -83,19 +83,22 @@ jobs:
             docker pull ${{ secrets.ECR_REPOSITORY }}:latest
 
             echo "Starting container..."
-            docker run -d \
-              --name library-management \
-              -p 8080:8080 \
-              -e SPRING_PROFILES_ACTIVE=prod \
-              -e SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}" \
-              -e SPRING_DATASOURCE_USERNAME="${{ secrets.SPRING_DATASOURCE_USERNAME }}" \
-              -e SPRING_DATASOURCE_PASSWORD="${{ secrets.SPRING_DATASOURCE_PASSWORD }}" \
-              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-              ${{ secrets.ECR_REPOSITORY }}:latest
+docker run -d \
+  --name library-management \
+  --log-driver=awslogs \
+  --log-opt awslogs-region=us-east-1 \
+  --log-opt awslogs-group=/library-management/backend \
+  --log-opt awslogs-stream=backend \
+  -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}" \
+  -e SPRING_DATASOURCE_USERNAME="${{ secrets.SPRING_DATASOURCE_USERNAME }}" \
+  -e SPRING_DATASOURCE_PASSWORD="${{ secrets.SPRING_DATASOURCE_PASSWORD }}" \
+  -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+  ${{ secrets.ECR_REPOSITORY }}:latest
 
-            echo "Container Status:"
-            docker ps
+echo "Container Status:"
+docker ps
 
-            echo "Application Logs:"
-            sleep 10
-            docker logs library-management --tail 100
+echo "Verify Log Driver:"
+docker inspect library-management --format='{{json .HostConfig.LogConfig}}'
