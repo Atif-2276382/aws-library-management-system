@@ -5,6 +5,7 @@ resource "aws_instance" "backend" {
   subnet_id              = var.public_subnet_1
   key_name               = aws_key_pair.library_key.key_name
   vpc_security_group_ids = [aws_security_group.backend_sg.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
   user_data = file("${path.module}/scripts/install-docker.sh")
 

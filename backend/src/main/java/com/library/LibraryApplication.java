@@ -22,7 +22,7 @@ private String dbUrl;
 
 @PostConstruct
 public void printDbUrl() {
-    System.out.println("DATABASE = " + dbUrl);
+    log.info("DATABASE = " + dbUrl);
 }
 
     public static void main(String[] args) {
@@ -33,6 +33,5 @@ public void printDbUrl() {
        @EventListener(ApplicationReadyEvent.class)
     public void startup() {
         log.info("=== CUSTOM INFO LOG WORKING ===");
-        log.debug("=== CUSTOM DEBUG LOG WORKING ===");
     }
 }
