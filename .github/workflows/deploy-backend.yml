@@ -7,7 +7,7 @@ jobs:
 deploy-backend:
 runs-on: ubuntu-latest
 
-```
+
 defaults:
   run:
     working-directory: backend
@@ -101,4 +101,3 @@ steps:
         echo "Application Logs"
         sleep 10
         docker logs library-management --tail 100
-```
