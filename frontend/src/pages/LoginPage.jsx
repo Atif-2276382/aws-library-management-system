@@ -29,7 +29,6 @@ export default function LoginPage() {
         <label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
         <button type="submit">Login</button>
         <p>No account? <Link to="/register">Register</Link></p>
-        <p className="hint">Librarian demo: librarian / librarian123</p>
       </form>
     </div>
   );
