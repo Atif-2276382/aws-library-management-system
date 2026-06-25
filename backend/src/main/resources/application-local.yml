@@ -37,7 +37,9 @@ management:
   endpoint:
     health:
       show-details: always
-
+scheduler:
+  secret: library-scheduler-secret-2026
+    
 logging:
   level:
     root: INFO

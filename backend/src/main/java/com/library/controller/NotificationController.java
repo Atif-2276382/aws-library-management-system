@@ -6,6 +6,8 @@ import com.library.repository.MemberRepository;
 import com.library.security.LibraryUserDetails;
 import com.library.service.NotificationService;
 import jakarta.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +18,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
+
+    @Value("${scheduler.secret}")
+    private String schedulerSecret;
 
     private final NotificationService notificationService;
     private final MemberRepository memberRepository;
@@ -54,8 +59,11 @@ public ResponseEntity<String> triggerReminders() {
 }
 
 @PostMapping("/scheduler/overdue")
-public ResponseEntity<String> triggerOverdueNotifications() {
+public ResponseEntity<String> triggerOverdueNotifications(  @RequestHeader("X-Scheduler-Key") String key) {
 
+        if (!schedulerSecret.equals(key)) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
     notificationService.sendOverdueNotifications();
 
     return ResponseEntity.ok("Overdue notifications processed");

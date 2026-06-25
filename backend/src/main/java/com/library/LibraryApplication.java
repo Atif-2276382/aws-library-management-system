@@ -32,6 +32,6 @@ public void printDbUrl() {
 
        @EventListener(ApplicationReadyEvent.class)
     public void startup() {
-        log.info("=== CUSTOM INFO LOG WORKING SES Service EMAIL  ===");
+        log.info("=== CUSTOM INFO LOG WORKING Event Service EMAIL  ===");
     }
 }

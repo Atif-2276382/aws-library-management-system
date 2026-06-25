@@ -39,6 +39,8 @@ management:
     health:
       show-details: always
 
+scheduler:
+  secret: library-scheduler-secret-2026
 logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"
